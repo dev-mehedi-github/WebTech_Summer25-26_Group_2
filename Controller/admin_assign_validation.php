@@ -1,6 +1,4 @@
 <?php
-// Used by assign_admin.php to let an already-logged-in admin create another admin account
-
 $aname = "";
 $aemail = "";
 $auname = "";
