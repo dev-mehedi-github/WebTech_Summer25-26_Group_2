@@ -1,6 +1,4 @@
 <?php
-// Shared by search_doctor.php and manage_doctor.php
-
 $doctorList = json_decode(file_get_contents("../Model/doctor_demo.json"), true);
 if (!is_array($doctorList)) {
     $doctorList = [];
@@ -19,7 +17,6 @@ if ($keyword === "") {
     }
 }
 
-// Handle "Edit" link (?edit=id) - load the selected doctor into the edit form
 $editDoctor = null;
 if (isset($_GET["edit"])) {
     foreach ($doctorList as $doctorRow) {
@@ -30,7 +27,6 @@ if (isset($_GET["edit"])) {
     }
 }
 
-// Handle profile update submission
 $message = "";
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["doctor_id"])) {
     $dname = trim($_POST["dname"] ?? "");
