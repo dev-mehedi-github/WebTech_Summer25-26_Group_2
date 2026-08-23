@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "name": "Palash",
+        "phone": "01246631416",
+        "dob": "2026-08-12",
+        "gender": "male",
+        "email": "palash@gmail.com",
+        "password": "palash"
+    },
+    {
+        "id": 2,
+        "name": "Mehedi",
+        "phone": "01246631417",
+        "dob": "2026-08-13",
+        "gender": "male",
+        "email": "mehedi@gmail.com",
+        "password": "mehedi123"
+    }
+]
