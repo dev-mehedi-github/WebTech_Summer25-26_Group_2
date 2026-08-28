@@ -1,5 +1,24 @@
 <?php
 include '../Controller/patient_validation.php';
+
+$doctorList = json_decode(file_get_contents("../Model/doctor_demo.json"), true);
+if (!is_array($doctorList)) {
+    $doctorList = [];
+}
+
+$doctorSearch = trim($_GET["doctor_search"] ?? "");
+$filteredDoctors = $doctorList;
+if ($doctorSearch !== "") {
+    $filteredDoctors = [];
+    foreach ($doctorList as $doctorRow) {
+        $name = strtolower($doctorRow["name"] ?? "");
+        $specialization = strtolower($doctorRow["specialization"] ?? "");
+        $keyword = strtolower($doctorSearch);
+        if (strpos($name, $keyword) !== false || strpos($specialization, $keyword) !== false) {
+            $filteredDoctors[] = $doctorRow;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -170,7 +189,36 @@ th {
 </style>
 
 <script>
+    function filterDoctorList() {
+        const query = document.getElementById('searchDoctor').value.trim().toLowerCase();
+        const rows = document.querySelectorAll('#doctorlist tr[data-doctor]');
+        rows.forEach((row) => {
+            const text = row.dataset.doctor.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
 
+        const select = document.getElementById('selectDoctor');
+        Array.from(select.options).forEach((option) => {
+            if (!option.value) {
+                return;
+            }
+            const text = option.text.toLowerCase();
+            option.style.display = text.includes(query) || query === '' ? '' : 'none';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchDoctor');
+        const searchBtn = document.getElementById('searchBtn');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', filterDoctorList);
+        }
+
+        if (searchBtn) {
+            searchBtn.addEventListener('click', filterDoctorList);
+        }
+    });
 </script>
 </head>
 
@@ -202,7 +250,7 @@ th {
   </div>
 
   <div class="top-nav">
-      <input type="text" id="searchDoctor" placeholder="Search for doctor">
+      <input type="text" id="searchDoctor" name="doctor_search" placeholder="Search for doctor" value="<?php echo htmlspecialchars($doctorSearch); ?>">
       <button type="button" id="searchBtn">Search</button>
   </div>
 
@@ -211,12 +259,28 @@ th {
     <table>
         <thead>
             <tr>
+                <th>Photo</th>
                 <th>Doctor Name</th>
                 <th>Specialist</th>
                 <th>Time</th>
             </tr>
         </thead>
         <tbody id="doctorlist">
+            <?php foreach ($filteredDoctors as $doctorRow) { ?>
+                <tr data-doctor="<?php echo htmlspecialchars($doctorRow["name"] . ' ' . ($doctorRow["specialization"] ?? '')); ?>">
+                    <td>
+                        <?php $doctorImage = $doctorRow["image"] ?? ""; ?>
+                        <?php if (!empty($doctorImage)) { ?>
+                            <img src="<?php echo htmlspecialchars($doctorImage); ?>" alt="Doctor Photo" style="width:45px;height:45px;border-radius:50%;object-fit:cover;">
+                        <?php } else { ?>
+                            <div style="width:45px;height:45px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:11px;color:#0f172a;">Doc</div>
+                        <?php } ?>
+                    </td>
+                    <td><?php echo htmlspecialchars($doctorRow["name"] ?? ""); ?></td>
+                    <td><?php echo htmlspecialchars($doctorRow["specialization"] ?? ""); ?></td>
+                    <td>Available</td>
+                </tr>
+            <?php } ?>
         </tbody>
     </table>
   </div>
@@ -231,6 +295,9 @@ th {
             <td>
                 <select id="selectDoctor" name="doctor" required>
                   <option value="">-- Select Doctor --</option>
+                  <?php foreach ($filteredDoctors as $doctorRow) { ?>
+                      <option value="<?php echo htmlspecialchars($doctorRow["name"] ?? ""); ?>"><?php echo htmlspecialchars($doctorRow["name"] ?? ""); ?> - <?php echo htmlspecialchars($doctorRow["specialization"] ?? ""); ?></option>
+                  <?php } ?>
                 </select>
                 <?php echo $selectDoctor ?? ''; ?>
             </td>

@@ -5,5 +5,12 @@
         "email": "mushfiq@gmail.com",
         "username": "mushfiq",
         "password": "mushfiq123"
+    },
+    {
+        "id": 2,
+        "name": "Mahabub",
+        "email": "mahabubsourov555@gmail.com",
+        "username": "mahabub",
+        "password": "mahabub12345"
     }
 ]

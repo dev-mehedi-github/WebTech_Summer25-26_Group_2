@@ -243,6 +243,14 @@ th {
                   <td><input type="text" id="demail" name="demail" value="<?php echo htmlspecialchars($editDoctor["email"]); ?>"></td>
               </tr>
               <tr>
+                  <td><label>Username</label></td>
+                  <td><input type="text" id="dusername" name="dusername" value="<?php echo htmlspecialchars($editDoctor["username"] ?? ""); ?>"></td>
+              </tr>
+              <tr>
+                  <td><label>Password</label></td>
+                  <td><input type="text" id="dpass" name="dpass" value="<?php echo htmlspecialchars($editDoctor["password"] ?? ""); ?>"></td>
+              </tr>
+              <tr>
                   <td><label>Phone</label></td>
                   <td><input type="text" id="dphone" name="dphone" value="<?php echo htmlspecialchars($editDoctor["phone"]); ?>"></td>
               </tr>
@@ -257,9 +265,11 @@ th {
     <table>
         <thead>
             <tr>
+                <th>Photo</th>
                 <th>Doctor Name</th>
                 <th>Specialization</th>
                 <th>Email</th>
+                <th>Username</th>
                 <th>Phone</th>
                 <th>Action</th>
             </tr>
@@ -267,9 +277,18 @@ th {
         <tbody>
             <?php foreach ($filteredDoctors as $doctorRow) { ?>
                 <tr>
+                    <td>
+                        <?php $doctorImage = $doctorRow["image"] ?? ""; ?>
+                        <?php if (!empty($doctorImage)) { ?>
+                            <img src="<?php echo htmlspecialchars($doctorImage); ?>" alt="Doctor Photo" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">
+                        <?php } else { ?>
+                            <div style="width:50px;height:50px;border-radius:50%;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-size:12px;color:#0f172a;">Doc</div>
+                        <?php } ?>
+                    </td>
                     <td><?php echo htmlspecialchars($doctorRow["name"]); ?></td>
                     <td><?php echo htmlspecialchars($doctorRow["specialization"]); ?></td>
                     <td><?php echo htmlspecialchars($doctorRow["email"]); ?></td>
+                    <td><?php echo htmlspecialchars($doctorRow["username"] ?? ""); ?></td>
                     <td><?php echo htmlspecialchars($doctorRow["phone"]); ?></td>
                     <td><a class="edit-link" href="manage_doctor.php?edit=<?php echo urlencode($doctorRow["id"]); ?>">Edit</a></td>
                 </tr>

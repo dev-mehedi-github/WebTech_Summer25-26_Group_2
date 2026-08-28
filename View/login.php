@@ -8,20 +8,28 @@ include '../Controller/login_validation.php';
     <title>Login-Doctor Appointment System</title>
 
     <script>
-        function collect_data()
-            {
+        function setRole(role) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.role === role));
+            const hiddenRole = document.getElementById('role');
+            if (hiddenRole) {
+                hiddenRole.value = role;
+            }
+        }
+
+        function collect_data() {
                 let uname = document.getElementById("uname").value.trim();
                 let pass = document.getElementById("pass").value.trim();
                 let valid = true;
                 let message="";
-                if(uname.length <5)
+                if(uname.length <3)
                 {
-                    message+="User Name Should be 5 Char";
+                    message+="Username should be at least 3 characters. ";
                     valid = false;
                 }
                 if(pass.length <5)
                 {
-                    message+="Password Must be 5 Char";
+                    message+="Password must be at least 5 characters.";
                     valid = false;
                 }
                 if(!valid)
@@ -53,6 +61,29 @@ body {
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 8px;
+  border: 1px solid #1a4dd6;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a4dd6;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tab.active {
+  background: #1a4dd6;
+  color: #fff;
 }
 
 h1 {
@@ -159,7 +190,14 @@ input[type="reset"]:hover {
             <div class="message"><?php echo htmlspecialchars($message); ?></div>
         <?php } ?>
 
+        <div class="tabs">
+            <div class="tab active" data-role="patient" onclick="setRole('patient')">Patient</div>
+            <div class="tab" data-role="admin" onclick="setRole('admin')">Admin</div>
+            <div class="tab" data-role="doctor" onclick="setRole('doctor')">Doctor</div>
+        </div>
+
         <form action="" method="POST" onsubmit="return collect_data();">
+            <input type="hidden" id="role" name="role" value="patient">
             <table>
                 <tr>
                     <td><label for="Username">Username:</label></td>
