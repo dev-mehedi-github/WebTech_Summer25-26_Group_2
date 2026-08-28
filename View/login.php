@@ -49,18 +49,21 @@ include '../Controller/login_validation.php';
 
 body {
   font-family: Cambria, Cochin, Georgia, "Times New Roman", serif;
-  background-color: #7ce7ec ;
+  background: linear-gradient(rgba(10, 35, 66, 0.72), rgba(10, 35, 66, 0.72)),
+              url('../image/hospital/hospital-bg.svg') center/cover no-repeat fixed;
   padding: 50px;
   line-height: 1.5;
+  min-height: 100vh;
 }
 
 .container-login {
   max-width: 420px;
   margin: 0 auto;
-  background-color: #d8fefd;
+  background: rgba(255, 255, 255, 0.94);
   padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(3px);
 }
 
 .tabs {
@@ -200,13 +203,13 @@ input[type="reset"]:hover {
             <input type="hidden" id="role" name="role" value="patient">
             <table>
                 <tr>
-                    <td><label for="Username">Username:</label></td>
-                    <td><input type="text" id="uname" name="uname" value="<?php echo htmlspecialchars($uname); ?>"></td>
+                  <td><label for="uname">Username:</label></td>
+                  <td><input type="text" id="uname" name="uname" autocomplete="username" required value="<?php echo htmlspecialchars($uname); ?>"></td>
                 </tr>
 
                 <tr>
-                    <td><label for="Password">Password:</label></td>
-                    <td><input type="password" id="pass" name="pass"></td>
+                  <td><label for="pass">Password:</label></td>
+                  <td><input type="password" id="pass" name="pass" autocomplete="current-password" required></td>
                 </tr>
 
                 <tr>
