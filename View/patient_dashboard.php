@@ -1,6 +1,16 @@
 <?php
 include '../Controller/patient_validation.php';
 
+$appointmentMessage = "";
+$appointmentSuccess = false;
+$appointmentData = [
+    "doctor" => "",
+    "date" => "",
+    "time" => "",
+    "patientName" => "",
+    "gender" => ""
+];
+
 $doctorList = json_decode(file_get_contents("../Model/doctor_demo.json"), true);
 if (!is_array($doctorList)) {
     $doctorList = [];
@@ -17,6 +27,65 @@ if ($doctorSearch !== "") {
         if (strpos($name, $keyword) !== false || strpos($specialization, $keyword) !== false) {
             $filteredDoctors[] = $doctorRow;
         }
+    }
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["makeApp"])) {
+    $appointmentData["doctor"] = trim($_POST["doctor"] ?? "");
+    $appointmentData["date"] = $_POST["appointmentDate"] ?? "";
+    $appointmentData["time"] = $_POST["appointmentTime"] ?? "10:00 AM";
+    $appointmentData["patientName"] = trim($_POST["patientName"] ?? "");
+    $appointmentData["gender"] = $_POST["gender"] ?? "";
+
+    $errors = [];
+
+    if ($appointmentData["doctor"] === "") {
+        $errors[] = "Please select a doctor.";
+    }
+    if ($appointmentData["date"] === "") {
+        $errors[] = "Please select an appointment date.";
+    }
+    if ($appointmentData["patientName"] === "") {
+        $errors[] = "Please enter your name.";
+    }
+    if ($appointmentData["gender"] === "") {
+        $errors[] = "Please select your gender.";
+    }
+
+    if (empty($errors)) {
+        $appointmentList = json_decode(file_get_contents("../Model/appointment_demo.json"), true);
+        if (!is_array($appointmentList)) {
+            $appointmentList = [];
+        }
+
+        $newId = 1;
+        foreach ($appointmentList as $row) {
+            if ((int)($row["id"] ?? 0) >= $newId) {
+                $newId = (int)($row["id"] ?? 0) + 1;
+            }
+        }
+
+        $appointmentList[] = [
+            "id" => $newId,
+            "patient_name" => $appointmentData["patientName"],
+            "doctor_name" => $appointmentData["doctor"],
+            "date" => $appointmentData["date"],
+            "time" => $appointmentData["time"],
+            "status" => "Pending"
+        ];
+
+        file_put_contents("../Model/appointment_demo.json", json_encode($appointmentList, JSON_PRETTY_PRINT));
+
+        $appointmentSuccess = true;
+        $appointmentMessage = "Appointment booked successfully! Patient: " . $appointmentData["patientName"] . " | Doctor: " . $appointmentData["doctor"] . " | Date: " . $appointmentData["date"] . " | Time: " . $appointmentData["time"] . ".";
+
+        $appointmentData["doctor"] = "";
+        $appointmentData["date"] = "";
+        $appointmentData["time"] = "10:00 AM";
+        $appointmentData["patientName"] = "";
+        $appointmentData["gender"] = "";
+    } else {
+        $appointmentMessage = implode(" ", $errors);
     }
 }
 ?>
@@ -285,9 +354,16 @@ th {
     </table>
   </div>
 
+  <?php if (!empty($appointmentMessage)) { ?>
+      <div class="booking-form" style="border-left: 4px solid <?php echo $appointmentSuccess ? '#16a34a' : '#dc2626'; ?>; background: <?php echo $appointmentSuccess ? '#f0fdf4' : '#fef2f2'; ?>; color: #111827; margin-bottom: 20px;">
+          <strong><?php echo $appointmentSuccess ? 'Booked Successfully' : 'Booking Error'; ?></strong>
+          <p style="margin-top: 8px;"><?php echo htmlspecialchars($appointmentMessage); ?></p>
+      </div>
+  <?php } ?>
+
   <div class="booking-form">
       <h2>Book an Appointment</h2>
-      <form id="bookingForm" method="post" action="book_appointment.php">
+      <form id="bookingForm" method="post" action="">
 
       <table>
         <tr>
@@ -305,14 +381,27 @@ th {
 
         <tr>
             <td><label>Date</label></td>
-            <td><input type="date" id="appointmentDate" name="appointmentDate" required>
+            <td><input type="date" id="appointmentDate" name="appointmentDate" value="<?php echo htmlspecialchars($appointmentData["date"]); ?>" required>
             <?php echo $selectAppDate ?? ''; ?>
             </td>
         </tr>
 
         <tr>
+            <td><label>Time</label></td>
+            <td>
+                <select id="appointmentTime" name="appointmentTime" required>
+                    <option value="10:00 AM" <?php echo ($appointmentData["time"] === "10:00 AM") ? "selected" : ""; ?>>10:00 AM</option>
+                    <option value="11:30 AM" <?php echo ($appointmentData["time"] === "11:30 AM") ? "selected" : ""; ?>>11:30 AM</option>
+                    <option value="01:00 PM" <?php echo ($appointmentData["time"] === "01:00 PM") ? "selected" : ""; ?>>01:00 PM</option>
+                    <option value="02:30 PM" <?php echo ($appointmentData["time"] === "02:30 PM") ? "selected" : ""; ?>>02:30 PM</option>
+                    <option value="04:00 PM" <?php echo ($appointmentData["time"] === "04:00 PM") ? "selected" : ""; ?>>04:00 PM</option>
+                </select>
+            </td>
+        </tr>
+
+        <tr>
             <td><label>Name</label></td>
-            <td><input type="text" id="patientNameInput" name="patientName" required>
+            <td><input type="text" id="patientNameInput" name="patientName" value="<?php echo htmlspecialchars($appointmentData["patientName"]); ?>" required>
             <?php echo $ptname ?? ''; ?>
             </td>
         </tr>
@@ -322,9 +411,9 @@ th {
             <td>
                 <select id="genderInput" name="gender" required>
                   <option value="">-- Select --</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
+                  <option value="male" <?php echo ($appointmentData["gender"] === "male") ? "selected" : ""; ?>>Male</option>
+                  <option value="female" <?php echo ($appointmentData["gender"] === "female") ? "selected" : ""; ?>>Female</option>
+                  <option value="other" <?php echo ($appointmentData["gender"] === "other") ? "selected" : ""; ?>>Other</option>
               </select>
               <?php echo $ptgender ?? ''; ?>
             </td>
