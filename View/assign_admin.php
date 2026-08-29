@@ -5,7 +5,7 @@ include '../Controller/admin_assign_validation.php';
 <!DOCTYPE html>
 <html>
 <head>
-<title>Assign New Admin-Doctor Appointment System</title>
+<title>Assign New Admin - Doctor Appointment System</title>
 <style>
 * {
   box-sizing: border-box;
