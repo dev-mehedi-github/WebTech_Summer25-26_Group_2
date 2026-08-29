@@ -1,14 +1,11 @@
 <?php
+require_once '../Model/db_connect.php';
+
 $aname = "";
 $aemail = "";
 $auname = "";
 $message = "";
 $success = false;
-
-$adminList = json_decode(file_get_contents("../Model/admin_demo.json"), true);
-if (!is_array($adminList)) {
-    $adminList = [];
-}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $aname = trim($_POST["aname"] ?? "");
@@ -31,30 +28,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors[] = "Password must be at least 5 characters.";
     }
 
-    foreach ($adminList as $adminRow) {
-        if (strtolower($adminRow["username"]) === strtolower($auname)) {
-            $errors[] = "That username is already taken.";
-            break;
+    if (empty($errors)) {
+        $stmt = $pdo->prepare("SELECT id FROM admins WHERE LOWER(username) = LOWER(:username) OR LOWER(email) = LOWER(:email) LIMIT 1");
+        $stmt->execute(["username" => $auname, "email" => $aemail]);
+        if ($stmt->fetch()) {
+            $errors[] = "That username or email is already registered.";
         }
     }
 
     if (empty($errors)) {
-        $newId = 1;
-        foreach ($adminList as $adminRow) {
-            if ($adminRow["id"] >= $newId) {
-                $newId = $adminRow["id"] + 1;
-            }
-        }
-
-        $adminList[] = [
-            "id" => $newId,
+        $insert = $pdo->prepare("INSERT INTO admins (name, email, username, password) VALUES (:name, :email, :username, :password)");
+        $insert->execute([
             "name" => $aname,
             "email" => $aemail,
             "username" => $auname,
-            "password" => $apass
-        ];
-
-        file_put_contents("../Model/admin_demo.json", json_encode($adminList, JSON_PRETTY_PRINT));
+            "password" => $apass,
+        ]);
 
         $success = true;
         $message = "New admin account \"" . $auname . "\" was created successfully.";
@@ -65,4 +54,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $message = implode(" ", $errors);
     }
 }
+
+$adminList = $pdo->query("SELECT id, name, email, username FROM admins ORDER BY id")->fetchAll();
 ?>
