@@ -1,30 +1,21 @@
 <?php
-$doctorList = json_decode(file_get_contents("../Model/doctor_demo.json"), true);
-if (!is_array($doctorList)) {
-    $doctorList = [];
-}
+require_once '../Model/db_connect.php';
 
 $keyword = trim($_GET["keyword"] ?? "");
 
-$filteredDoctors = [];
 if ($keyword === "") {
-    $filteredDoctors = $doctorList;
+    $filteredDoctors = $pdo->query("SELECT * FROM doctors ORDER BY id")->fetchAll();
 } else {
-    foreach ($doctorList as $doctorRow) {
-        if (stripos($doctorRow["name"], $keyword) !== false || stripos($doctorRow["specialization"], $keyword) !== false) {
-            $filteredDoctors[] = $doctorRow;
-        }
-    }
+    $stmt = $pdo->prepare("SELECT * FROM doctors WHERE name LIKE :kw OR specialization LIKE :kw ORDER BY id");
+    $stmt->execute(["kw" => "%" . $keyword . "%"]);
+    $filteredDoctors = $stmt->fetchAll();
 }
 
 $editDoctor = null;
 if (isset($_GET["edit"])) {
-    foreach ($doctorList as $doctorRow) {
-        if ((int)$doctorRow["id"] === (int)$_GET["edit"]) {
-            $editDoctor = $doctorRow;
-            break;
-        }
-    }
+    $stmt = $pdo->prepare("SELECT * FROM doctors WHERE id = :id LIMIT 1");
+    $stmt->execute(["id" => (int)$_GET["edit"]]);
+    $editDoctor = $stmt->fetch() ?: null;
 }
 
 $message = "";
@@ -35,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["doctor_id"])) {
     $dusername = trim($_POST["dusername"] ?? "");
     $dpass = trim($_POST["dpass"] ?? "");
     $dphone = trim($_POST["dphone"] ?? "");
-    $doctorId = $_POST["doctor_id"];
+    $doctorId = (int)$_POST["doctor_id"];
 
     if (strlen($dname) < 3 || strlen($dspec) < 3 || $demail === "" || strlen($dusername) < 3 || strlen($dpass) < 5 || strlen($dphone) < 6) {
         $message = "Please fill in all fields correctly.";
@@ -49,24 +40,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["doctor_id"])) {
             "phone" => $dphone
         ];
     } else {
-        foreach ($doctorList as &$doctorRow) {
-            if ((int)$doctorRow["id"] === (int)$doctorId) {
-                $doctorRow["name"] = $dname;
-                $doctorRow["specialization"] = $dspec;
-                $doctorRow["email"] = $demail;
-                $doctorRow["username"] = $dusername;
-                $doctorRow["password"] = $dpass;
-                $doctorRow["phone"] = $dphone;
-                break;
-            }
-        }
-        unset($doctorRow);
-
-        file_put_contents("../Model/doctor_demo.json", json_encode($doctorList, JSON_PRETTY_PRINT));
+        $update = $pdo->prepare(
+            "UPDATE doctors SET name = :name, specialization = :spec, email = :email, username = :username, password = :password, phone = :phone WHERE id = :id"
+        );
+        $update->execute([
+            "name" => $dname,
+            "spec" => $dspec,
+            "email" => $demail,
+            "username" => $dusername,
+            "password" => $dpass,
+            "phone" => $dphone,
+            "id" => $doctorId,
+        ]);
 
         $message = "Doctor profile updated successfully.";
         $editDoctor = null;
-        $filteredDoctors = $doctorList;
+        $filteredDoctors = $pdo->query("SELECT * FROM doctors ORDER BY id")->fetchAll();
     }
 }
 ?>
