@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../Model/db_connect.php';
 
 $ptname = "";
 $ptphone = "";
@@ -45,37 +46,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors[] = "Password must be at least 5 characters.";
     }
 
-    $patientList = json_decode(file_get_contents("../Model/demo.json"), true);
-    if (!is_array($patientList)) {
-        $patientList = [];
-    }
-
-    foreach ($patientList as $patientRow) {
-        if (strtolower($patientRow["email"]) === strtolower($ptemail)) {
+    if (empty($errors)) {
+        $stmt = $pdo->prepare("SELECT id FROM patients WHERE LOWER(email) = LOWER(:email) LIMIT 1");
+        $stmt->execute(["email" => $ptemail]);
+        if ($stmt->fetch()) {
             $errors[] = "An account with that email already exists.";
-            break;
         }
     }
 
     if (empty($errors)) {
-        $newId = 1;
-        foreach ($patientList as $patientRow) {
-            if ($patientRow["id"] >= $newId) {
-                $newId = $patientRow["id"] + 1;
-            }
-        }
-
-        $patientList[] = [
-            "id" => $newId,
+        $insert = $pdo->prepare("INSERT INTO patients (name, phone, dob, gender, email, password) VALUES (:name, :phone, :dob, :gender, :email, :password)");
+        $insert->execute([
             "name" => $ptname,
             "phone" => $ptphone,
             "dob" => $ptdob,
             "gender" => $ptgender,
             "email" => $ptemail,
-            "password" => $ptpass
-        ];
-
-        file_put_contents("../Model/demo.json", json_encode($patientList, JSON_PRETTY_PRINT));
+            "password" => $ptpass,
+        ]);
 
         if ($remember) {
             setcookie("remember_user", $ptemail, time() + 60 * 60 * 24 * 7, "/");
