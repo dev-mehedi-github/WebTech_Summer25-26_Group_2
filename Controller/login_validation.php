@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../Model/db_connect.php';
 
 $uname = "";
 $pass = "";
@@ -32,48 +33,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $loggedIn = true;
             $redirectTo = "admin_dashboard.php";
         } else {
-            $adminList = json_decode(file_get_contents("../Model/admin_demo.json"), true);
-            if (!is_array($adminList)) {
-                $adminList = [];
-            }
+            $stmt = $pdo->prepare("SELECT * FROM admins WHERE LOWER(username) = LOWER(:uname) LIMIT 1");
+            $stmt->execute(["uname" => $uname]);
+            $adminRow = $stmt->fetch();
 
-            foreach ($adminList as $adminRow) {
-                if (strtolower($adminRow["username"]) === strtolower($uname) && $adminRow["password"] === $pass) {
-                    $_SESSION["logged_in"] = true;
-                    $_SESSION["role"] = "admin";
-                    $_SESSION["username"] = $adminRow["username"];
-                    $_SESSION["admin_logged_in"] = true;
-                    $_SESSION["admin_name"] = $adminRow["name"];
-                    $_SESSION["admin_username"] = $adminRow["username"];
-                    $_SESSION["admin_email"] = $adminRow["email"];
+            if ($adminRow && $adminRow["password"] === $pass) {
+                $_SESSION["logged_in"] = true;
+                $_SESSION["role"] = "admin";
+                $_SESSION["username"] = $adminRow["username"];
+                $_SESSION["admin_logged_in"] = true;
+                $_SESSION["admin_name"] = $adminRow["name"];
+                $_SESSION["admin_username"] = $adminRow["username"];
+                $_SESSION["admin_email"] = $adminRow["email"];
 
-                    $loggedIn = true;
-                    $redirectTo = "admin_dashboard.php";
-                    break;
-                }
+                $loggedIn = true;
+                $redirectTo = "admin_dashboard.php";
             }
         }
     } elseif ($role === "doctor") {
-        $doctorList = json_decode(file_get_contents("../Model/doctor_demo.json"), true);
-        if (!is_array($doctorList)) {
-            $doctorList = [];
-        }
+        $stmt = $pdo->prepare("SELECT * FROM doctors WHERE LOWER(username) = LOWER(:uname) OR LOWER(email) = LOWER(:uname) LIMIT 1");
+        $stmt->execute(["uname" => $uname]);
+        $doctorRow = $stmt->fetch();
 
-        foreach ($doctorList as $doctorRow) {
-            $doctorUsername = strtolower($doctorRow["username"] ?? "");
-            $doctorEmail = strtolower($doctorRow["email"] ?? "");
-            if (($doctorUsername === strtolower($uname) || $doctorEmail === strtolower($uname)) && ($doctorRow["password"] ?? "") === $pass) {
-                $_SESSION["logged_in"] = true;
-                $_SESSION["role"] = "doctor";
-                $_SESSION["username"] = $doctorRow["username"] ?? $doctorRow["email"];
-                $_SESSION["doctor_name"] = $doctorRow["name"];
-                $_SESSION["doctor_email"] = $doctorRow["email"];
-                $_SESSION["doctor_logged_in"] = true;
+        if ($doctorRow && $doctorRow["password"] === $pass) {
+            $_SESSION["logged_in"] = true;
+            $_SESSION["role"] = "doctor";
+            $_SESSION["username"] = $doctorRow["username"] ?? $doctorRow["email"];
+            $_SESSION["doctor_name"] = $doctorRow["name"];
+            $_SESSION["doctor_email"] = $doctorRow["email"];
+            $_SESSION["doctor_logged_in"] = true;
 
-                $loggedIn = true;
-                $redirectTo = "doctor_dashboard.php";
-                break;
-            }
+            $loggedIn = true;
+            $redirectTo = "doctor_dashboard.php";
         }
     } else {
         if ($uname === "patient" && $pass === "pt12345") {
@@ -85,22 +76,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $loggedIn = true;
             $redirectTo = "patient_dashboard.php";
         } else {
-            $patientList = json_decode(file_get_contents("../Model/demo.json"), true);
-            if (!is_array($patientList)) {
-                $patientList = [];
-            }
+            $stmt = $pdo->prepare("SELECT * FROM patients WHERE LOWER(email) = LOWER(:uname) LIMIT 1");
+            $stmt->execute(["uname" => $uname]);
+            $patientRow = $stmt->fetch();
 
-            foreach ($patientList as $patientRow) {
-                if (strtolower($patientRow["email"]) === strtolower($uname) && $patientRow["password"] === $pass) {
-                    $_SESSION["logged_in"] = true;
-                    $_SESSION["role"] = "patient";
-                    $_SESSION["username"] = $patientRow["email"];
-                    $_SESSION["patient_name"] = $patientRow["name"];
+            if ($patientRow && $patientRow["password"] === $pass) {
+                $_SESSION["logged_in"] = true;
+                $_SESSION["role"] = "patient";
+                $_SESSION["username"] = $patientRow["email"];
+                $_SESSION["patient_id"] = $patientRow["id"];
+                $_SESSION["patient_name"] = $patientRow["name"];
+                $_SESSION["patient_email"] = $patientRow["email"];
 
-                    $loggedIn = true;
-                    $redirectTo = "patient_dashboard.php";
-                    break;
-                }
+                $loggedIn = true;
+                $redirectTo = "patient_dashboard.php";
             }
         }
     }
