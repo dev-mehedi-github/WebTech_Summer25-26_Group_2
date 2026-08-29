@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once '../Model/db_connect.php';
 
 $auname = "";
 $apass = "";
@@ -15,20 +16,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $apass = trim($_POST["apass"] ?? "");
     $remember = isset($_POST["remember"]) && $_POST["remember"] === "1";
 
-    $adminList = json_decode(file_get_contents("../Model/admin_demo.json"), true);
-    if (!is_array($adminList)) {
-        $adminList = [];
-    }
+    $stmt = $pdo->prepare("SELECT * FROM admins WHERE LOWER(username) = LOWER(:uname) LIMIT 1");
+    $stmt->execute(["uname" => $auname]);
+    $matchedAdmin = $stmt->fetch();
 
-    $matchedAdmin = null;
-    foreach ($adminList as $adminRow) {
-        if (strtolower($adminRow["username"]) === strtolower($auname) && $adminRow["password"] === $apass) {
-            $matchedAdmin = $adminRow;
-            break;
-        }
-    }
-
-    if ($matchedAdmin) {
+    if ($matchedAdmin && $matchedAdmin["password"] === $apass) {
         $_SESSION["admin_logged_in"] = true;
         $_SESSION["admin_name"] = $matchedAdmin["name"];
         $_SESSION["admin_username"] = $matchedAdmin["username"];
