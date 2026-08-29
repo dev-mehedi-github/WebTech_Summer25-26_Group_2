@@ -1,5 +1,25 @@
 <?php
 include '../Controller/patient_validation.php';
+require_once '../Model/db_connect.php';
+
+$currentPatient = ["name" => $patientName, "email" => "", "phone" => "", "gender" => ""];
+if (!empty($_SESSION["patient_id"])) {
+    $stmt = $pdo->prepare("SELECT name, email, phone, gender FROM patients WHERE id = :id LIMIT 1");
+    $stmt->execute(["id" => $_SESSION["patient_id"]]);
+    $row = $stmt->fetch();
+    if ($row) {
+        $currentPatient = $row;
+    }
+}
+
+$statusMessages = [
+    "profile_success" => ["ok", "Profile updated successfully."],
+    "profile_error" => ["error", "Could not update profile. Please check your details."],
+    "pw_success" => ["ok", "Password updated successfully."],
+    "pw_error" => ["error", "Could not update password. Please check your details."],
+];
+$status = $_GET["status"] ?? "";
+$statusInfo = $statusMessages[$status] ?? null;
 ?>
 <!DOCTYPE html>
 <html>
@@ -168,6 +188,25 @@ th {
 #makeApp:hover {
   background: #15803d;
 }
+
+.message {
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.message.ok {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #c8e6c9;
+}
+
+.message.error {
+  background-color: #fdecea;
+  color: #b71c1c;
+  border: 1px solid #f5c6cb;
+}
 </style>
 </head>
 <body>
@@ -196,6 +235,10 @@ th {
       <h1>Account Settings</h1>
   </div>
 
+  <?php if ($statusInfo) { ?>
+      <div class="message <?php echo $statusInfo[0]; ?>"><?php echo htmlspecialchars($statusInfo[1]); ?></div>
+  <?php } ?>
+
   <div class="booking-form">
       <h2>Update Profile</h2>
       <form id="profileForm" method="post" action="update_profile.php">
@@ -203,24 +246,24 @@ th {
       <table>
         <tr>
             <td><label>Name</label></td>
-            <td><input type="text" id="ptname" name="ptname" required></td>
+            <td><input type="text" id="ptname" name="ptname" value="<?php echo htmlspecialchars($currentPatient["name"]); ?>" required></td>
         </tr>
         <tr>
             <td><label>Email</label></td>
-            <td><input type="email" id="ptemail" name="ptemail" required></td>
+            <td><input type="email" id="ptemail" name="ptemail" value="<?php echo htmlspecialchars($currentPatient["email"]); ?>" required></td>
         </tr>
         <tr>
             <td><label>Phone</label></td>
-            <td><input type="text" id="ptphone" name="ptphone"></td>
+            <td><input type="text" id="ptphone" name="ptphone" value="<?php echo htmlspecialchars($currentPatient["phone"] ?? ""); ?>"></td>
         </tr>
         <tr>
             <td><label>Gender</label></td>
             <td>
                 <select id="ptgender" name="ptgender">
                   <option value="">-- Select --</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
+                  <option value="male" <?php echo (($currentPatient["gender"] ?? "") === "male") ? "selected" : ""; ?>>Male</option>
+                  <option value="female" <?php echo (($currentPatient["gender"] ?? "") === "female") ? "selected" : ""; ?>>Female</option>
+                  <option value="other" <?php echo (($currentPatient["gender"] ?? "") === "other") ? "selected" : ""; ?>>Other</option>
               </select>
             </td>
         </tr>
