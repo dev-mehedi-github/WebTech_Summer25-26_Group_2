@@ -1,17 +1,17 @@
 <?php
 include '../Controller/patient_validation.php';
+require_once '../Model/db_connect.php';
 
-$appointmentList = json_decode(file_get_contents('../Model/appointment_demo.json'), true);
-if (!is_array($appointmentList)) {
-  $appointmentList = [];
-}
+$stmt = $pdo->prepare(
+    "SELECT doctor_name, appointment_date, appointment_time, status
+     FROM appointments
+     WHERE patient_name = :patient_name
+     ORDER BY appointment_date DESC, id DESC"
+);
+$stmt->execute(["patient_name" => $patientName]);
+$myAppointments = $stmt->fetchAll();
 
-$patientAppointments = [];
-foreach ($appointmentList as $appointment) {
-  if (strcasecmp(trim($appointment['patient_name'] ?? ''), trim($patientName)) === 0) {
-    $patientAppointments[] = $appointment;
-  }
-}
+$justBooked = isset($_GET["booked"]);
 ?>
 <!DOCTYPE html>
 <html>
@@ -179,6 +179,16 @@ th {
 #makeApp:hover {
   background: #15803d;
 }
+
+.message {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #c8e6c9;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
 </style>
 </head>
 
@@ -210,37 +220,34 @@ th {
       <h1>My Appointments</h1>
   </div>
 
+  <?php if ($justBooked) { ?>
+      <div class="message">Your appointment request has been submitted.</div>
+  <?php } ?>
+
   <div class="doctor-list">
     <h2 class="section-title">Appointment History</h2>
     <table>
         <thead>
             <tr>
                 <th>Doctor Name</th>
-                <th>Specialist</th>
                 <th>Date</th>
+                <th>Time</th>
                 <th>Status</th>
-                <th>Action</th>
             </tr>
         </thead>
         <tbody id="appointmentList">
-        <?php if (empty($patientAppointments)) { ?>
-          <tr>
-            <td colspan="5">No appointment history found.</td>
-          </tr>
-        <?php } else { ?>
-          <?php foreach ($patientAppointments as $appointment) { ?>
-            <tr>
-              <td><?php echo htmlspecialchars($appointment['doctor_name'] ?? ''); ?></td>
-              <td><?php echo htmlspecialchars($appointment['specialization'] ?? 'Doctor'); ?></td>
-              <td>
-                <?php echo htmlspecialchars($appointment['date'] ?? ''); ?><br>
-                <?php echo htmlspecialchars($appointment['time'] ?? ''); ?>
-              </td>
-              <td><?php echo htmlspecialchars($appointment['status'] ?? 'Pending'); ?></td>
-              <td>Booked</td>
-            </tr>
-          <?php } ?>
-        <?php } ?>
+            <?php if (count($myAppointments) === 0) { ?>
+                <tr><td colspan="4">You have no appointments yet.</td></tr>
+            <?php } else { ?>
+                <?php foreach ($myAppointments as $appt) { ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($appt["doctor_name"]); ?></td>
+                        <td><?php echo htmlspecialchars($appt["appointment_date"]); ?></td>
+                        <td><?php echo htmlspecialchars($appt["appointment_time"]); ?></td>
+                        <td><?php echo htmlspecialchars($appt["status"]); ?></td>
+                    </tr>
+                <?php } ?>
+            <?php } ?>
         </tbody>
     </table>
   </div>

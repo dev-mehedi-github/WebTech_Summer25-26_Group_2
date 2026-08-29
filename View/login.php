@@ -5,7 +5,7 @@ include '../Controller/login_validation.php';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Login-Doctor Appointment System</title>
+    <title>Login - Doctor Appointment System</title>
 
     <script>
         function setRole(role) {
@@ -14,6 +14,22 @@ include '../Controller/login_validation.php';
             const hiddenRole = document.getElementById('role');
             if (hiddenRole) {
                 hiddenRole.value = role;
+            }
+
+            const registerRow = document.getElementById('registerRow');
+            const registerLink = document.getElementById('registerLink');
+            if (registerRow && registerLink) {
+                if (role === 'admin') {
+                    registerRow.style.display = '';
+                    registerLink.href = 'admin_register.php';
+                    registerLink.textContent = 'Register as Admin';
+                } else if (role === 'patient') {
+                    registerRow.style.display = '';
+                    registerLink.href = 'register.php';
+                    registerLink.textContent = 'Register';
+                } else {
+                    registerRow.style.display = 'none';
+                }
             }
         }
 
@@ -49,8 +65,7 @@ include '../Controller/login_validation.php';
 
 body {
   font-family: Cambria, Cochin, Georgia, "Times New Roman", serif;
-  background: linear-gradient(rgba(10, 35, 66, 0.72), rgba(10, 35, 66, 0.72)),
-              url('../image/hospital/hospital-bg.svg') center/cover no-repeat fixed;
+  background: linear-gradient(135deg, #0a2342 0%, #1a4dd6 100%);
   padding: 50px;
   line-height: 1.5;
   min-height: 100vh;
@@ -226,9 +241,9 @@ input[type="reset"]:hover {
                     </td>
                 </tr>
 
-                <tr>
+                <tr id="registerRow">
                     <td colspan="2">
-                        <p>Don't have an account? <a href="register.php">Register</a></p>
+                        <p>Don't have an account? <a href="register.php" id="registerLink">Register</a></p>
                     </td>
                 </tr>
             </table>
