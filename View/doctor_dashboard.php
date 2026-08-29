@@ -1,26 +1,10 @@
 <?php
 include '../Controller/doctor_user_validation.php';
-
-$appointmentList = json_decode(file_get_contents('../Model/appointment_demo.json'), true);
-if (!is_array($appointmentList)) {
-  $appointmentList = [];
-}
-
-$doctorAppointments = [];
-foreach ($appointmentList as $appointment) {
-  if (strcasecmp(trim($appointment['doctor_name'] ?? ''), trim($doctorName)) === 0) {
-    $doctorAppointments[] = $appointment;
-  }
-}
-
-$pendingAppointments = count(array_filter($doctorAppointments, function ($appointment) {
-  return ($appointment['status'] ?? 'Pending') === 'Pending';
-}));
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-<title>Doctor Dashboard-Doctor Appointment System</title>
+<title>Doctor Dashboard - Doctor Appointment System</title>
 <style>
 * {
   box-sizing: border-box;
@@ -31,8 +15,7 @@ $pendingAppointments = count(array_filter($doctorAppointments, function ($appoin
 
 body {
   display: flex;
-  background: linear-gradient(rgba(224, 242, 254, 0.88), rgba(248, 250, 252, 0.92)),
-              url('../image/hospital/hospital-bg.svg') center/cover fixed;
+  background: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 35%, #ecfeff 100%);
   color: #1f2937;
 }
 
@@ -164,14 +147,6 @@ body {
   </div>
 
   <div class="card-grid">
-      <div class="card">
-        <h2><?php echo count($doctorAppointments); ?></h2>
-        <p>Total appointments assigned to you.</p>
-      </div>
-      <div class="card">
-        <h2><?php echo $pendingAppointments; ?></h2>
-        <p>Appointments waiting for confirmation.</p>
-      </div>
       <a href="doctor_schedule.php" class="card">
           <h2>My Schedule</h2>
           <p>Review your available appointment slots and weekly plan.</p>
