@@ -1,5 +1,17 @@
 <?php
 include '../Controller/patient_validation.php';
+
+$appointmentList = json_decode(file_get_contents('../Model/appointment_demo.json'), true);
+if (!is_array($appointmentList)) {
+  $appointmentList = [];
+}
+
+$patientAppointments = [];
+foreach ($appointmentList as $appointment) {
+  if (strcasecmp(trim($appointment['patient_name'] ?? ''), trim($patientName)) === 0) {
+    $patientAppointments[] = $appointment;
+  }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -211,6 +223,24 @@ th {
             </tr>
         </thead>
         <tbody id="appointmentList">
+        <?php if (empty($patientAppointments)) { ?>
+          <tr>
+            <td colspan="5">No appointment history found.</td>
+          </tr>
+        <?php } else { ?>
+          <?php foreach ($patientAppointments as $appointment) { ?>
+            <tr>
+              <td><?php echo htmlspecialchars($appointment['doctor_name'] ?? ''); ?></td>
+              <td><?php echo htmlspecialchars($appointment['specialization'] ?? 'Doctor'); ?></td>
+              <td>
+                <?php echo htmlspecialchars($appointment['date'] ?? ''); ?><br>
+                <?php echo htmlspecialchars($appointment['time'] ?? ''); ?>
+              </td>
+              <td><?php echo htmlspecialchars($appointment['status'] ?? 'Pending'); ?></td>
+              <td>Booked</td>
+            </tr>
+          <?php } ?>
+        <?php } ?>
         </tbody>
     </table>
   </div>
