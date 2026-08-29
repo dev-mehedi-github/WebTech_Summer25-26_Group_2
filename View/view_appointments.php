@@ -5,7 +5,7 @@ include '../Controller/appointment_validation.php';
 <!DOCTYPE html>
 <html>
 <head>
-<title>View Appointments-Doctor Appointment System</title>
+<title>View Appointments - Doctor Appointment System</title>
 <style>
 * {
   box-sizing: border-box;

@@ -4,7 +4,7 @@ include '../Controller/register_validation.php';
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Register-Doctor Appointment System</title>
+        <title>Register - Doctor Appointment System</title>
 
         <script>
             function collect_patient_data() {
