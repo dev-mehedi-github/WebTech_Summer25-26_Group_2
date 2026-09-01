@@ -155,6 +155,12 @@ th {
   margin-bottom: 15px;
   font-size: 14px;
 }
+
+.message.error {
+  background-color: #fdecea;
+  color: #b71c1c;
+  border-color: #f5c6cb;
+}
 </style>
 
 <script>
@@ -176,6 +182,46 @@ th {
         }
         if (demail === "" || !demail.includes("@")) {
             message += "A valid email is required.\n";
+            valid = false;
+        }
+        if (dphone.length < 6) {
+            message += "Phone number looks too short.\n";
+            valid = false;
+        }
+        if (!valid) {
+            alert(message);
+        }
+        return valid;
+    }
+
+    function collect_new_doctor_data() {
+        let dname = document.getElementById("new_dname").value.trim();
+        let dspec = document.getElementById("new_dspec").value.trim();
+        let demail = document.getElementById("new_demail").value.trim();
+        let dusername = document.getElementById("new_dusername").value.trim();
+        let dpass = document.getElementById("new_dpass").value.trim();
+        let dphone = document.getElementById("new_dphone").value.trim();
+        let valid = true;
+        let message = "";
+
+        if (dname.length < 3) {
+            message += "Doctor name must be at least 3 characters.\n";
+            valid = false;
+        }
+        if (dspec.length < 3) {
+            message += "Specialization must be at least 3 characters.\n";
+            valid = false;
+        }
+        if (demail === "" || !demail.includes("@")) {
+            message += "A valid email is required.\n";
+            valid = false;
+        }
+        if (dusername.length < 3) {
+            message += "Username must be at least 3 characters.\n";
+            valid = false;
+        }
+        if (dpass.length < 5) {
+            message += "Password must be at least 5 characters.\n";
             valid = false;
         }
         if (dphone.length < 6) {
@@ -221,8 +267,41 @@ th {
   </div>
 
   <?php if (!empty($message)) { ?>
-      <div class="message"><?php echo htmlspecialchars($message); ?></div>
+      <div class="message <?php echo $addSuccess ? '' : 'error'; ?>"><?php echo htmlspecialchars($message); ?></div>
   <?php } ?>
+
+  <div class="edit-form">
+      <h2 class="section-title">Add New Doctor</h2>
+      <form method="post" action="manage_doctor.php" onsubmit="return collect_new_doctor_data();">
+          <table>
+              <tr>
+                  <td><label>Doctor Name</label></td>
+                  <td><input type="text" id="new_dname" name="new_dname"></td>
+              </tr>
+              <tr>
+                  <td><label>Specialization</label></td>
+                  <td><input type="text" id="new_dspec" name="new_dspec"></td>
+              </tr>
+              <tr>
+                  <td><label>Email</label></td>
+                  <td><input type="text" id="new_demail" name="new_demail"></td>
+              </tr>
+              <tr>
+                  <td><label>Username</label></td>
+                  <td><input type="text" id="new_dusername" name="new_dusername"></td>
+              </tr>
+              <tr>
+                  <td><label>Password</label></td>
+                  <td><input type="text" id="new_dpass" name="new_dpass"></td>
+              </tr>
+              <tr>
+                  <td><label>Phone</label></td>
+                  <td><input type="text" id="new_dphone" name="new_dphone"></td>
+              </tr>
+          </table>
+          <button type="submit" id="saveBtn" name="add_doctor">Add Doctor</button>
+      </form>
+  </div>
 
   <?php if ($editDoctor) { ?>
   <div class="edit-form">
